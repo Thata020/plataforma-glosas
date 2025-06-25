@@ -58,6 +58,7 @@ usuarios = {
     "riquelme": {
         "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
         "perfil": "analista"
+    }
 }
 
 if 'auth' not in st.session_state:
