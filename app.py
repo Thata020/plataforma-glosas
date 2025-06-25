@@ -11,6 +11,8 @@ import logging
 import time
 import matplotlib.pyplot as plt
 import seaborn as sns
+from script_master import processar_glosas
+
 
 # === CONFIG INICIAL ===
 st.set_page_config(page_title="Glosas Unimed", layout="wide", page_icon="🏥")
@@ -102,9 +104,21 @@ file = st.file_uploader("Selecione o arquivo 549.xlsx", type="xlsx")
 
 if file:
     registrar(st.session_state.user, "UPLOAD", file.name)
+
     try:
+        st.info("📂 Carregando o arquivo...")
         df = pd.read_excel(file)
+
+        st.info("🛠 Fazendo correções no arquivo...")
         df = tratar_glosas(df)
+
+        st.info("🔍 Verificando se há glosas...")
+        df = processar_glosas(df)
+
+    except Exception as e:
+        st.error("❌ Erro ao processar o arquivo.")
+        registrar(st.session_state.user, "ERRO_PROCESSAMENTO", str(e))
+        st.stop()
 
         if 'data' in df.columns:
             df['data'] = pd.to_datetime(df['data'], errors='coerce')
