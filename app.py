@@ -1,5 +1,5 @@
 # === app.py ===
-# Plataforma de Análise de Glosas - Unificada com DeepSeek + processamento3.py
+# Plataforma de Análise de Glosas - Unificada com DeepSeek + correcao.py
 
 import streamlit as st
 import pandas as pd
@@ -88,24 +88,6 @@ if not st.session_state.auth:
 # === INTERFACE PRINCIPAL ===
 st.title("🏥 Análise de Glosas - Unimed")
 st.sidebar.success(f"Logado como: {st.session_state.user}")
-
-# === FUNÇÃO DE TRATAMENTO (processamento3.py embutido) ===
-def tratar_glosas(df):
-    df.columns = [unidecode(str(c)).strip().lower() for c in df.columns]
-    df.dropna(how='all', inplace=True)
-    df = df[df['motivo da glosa'].notna()]
-    df['motivo da glosa'] = df['motivo da glosa'].str.strip().str.upper()
-    df = df[~df['motivo da glosa'].isin(['REAPRESENTACAO', 'CODIGO REMOVIDO'])]
-
-    if 'prestador' in df.columns:
-        df = df[~df['prestador'].str.contains("ISENTO", case=False, na=False)]
-
-    # Aplica a correção de caracteres em todas as colunas de texto
-    for col in df.select_dtypes(include=["object"]).columns:
-        df[col] = df[col].apply(corrigir_caracteres)
-
-    return df
-
 
 # === UPLOAD E PROCESSAMENTO ===
 st.header("📤 Envio de Arquivo .xlsx cru")
