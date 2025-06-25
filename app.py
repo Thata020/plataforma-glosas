@@ -27,14 +27,37 @@ def check_password(senha, senha_hash):
     return bcrypt.checkpw(senha.encode('utf-8'), senha_hash.encode('utf-8'))
 
 usuarios = {
-    "thalita.moura": {"senha": "$2b$12$N9qo8uLOickgx2ZMRZoMy.M7JQ7yFy7ZJv5fAI9t7W0dC3g7uYJ5O"},
-    "ana.pereira": {"senha": "$2b$12$N9qo8uLOickgx2ZMRZoMy.M7JQ7yFy7ZJv5fAI9t7W0dC3g7uYJ5O"},
-    "ana.santos": {"senha": "$2b$12$N9qo8uLOickgx2ZMRZoMy.M7JQ7yFy7ZJv5fAI9t7W0dC3g7uYJ5O"},
-    "idayane.oliveira": {"senha": "$2b$12$N9qo8uLOickgx2ZMRZoMy.M7JQ7yFy7ZJv5fAI9t7W0dC3g7uYJ5O"},
-    "bruna.silva": {"senha": "$2b$12$N9qo8uLOickgx2ZMRZoMy.M7JQ7yFy7ZJv5fAI9t7W0dC3g7uYJ5O"},
-    "mariana.cunha": {"senha": "$2b$12$N9qo8uLOickgx2ZMRZoMy.M7JQ7yFy7ZJv5fAI9t7W0dC3g7uYJ5O"},
-    "weslane.martins": {"senha": "$2b$12$N9qo8uLOickgx2ZMRZoMy.M7JQ7yFy7ZJv5fAI9t7W0dC3g7uYJ5O"},
-    "riquelme": {"senha": "$2b$12$N9qo8uLOickgx2ZMRZoMy.M7JQ7yFy7ZJv5fAI9t7W0dC3g7uYJ5O"},
+    "thalita.moura": {
+        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "perfil": "supervisor"
+    },
+    "ana.pereira": {
+        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "perfil": "analista"
+    },
+    "ana.santos": {
+        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "perfil": "analista"
+    },
+    "idayane.oliveira": {
+        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "perfil": "analista"
+    },
+    "bruna.silva": {
+        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "perfil": "analista"
+    },
+    "mariana.cunha": {
+        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "perfil": "analista"
+    },
+    "weslane.martins": {
+        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "perfil": "analista"
+    },
+    "riquelme": {
+        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "perfil": "analista"
 }
 
 if 'auth' not in st.session_state:
