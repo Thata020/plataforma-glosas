@@ -6,6 +6,7 @@ import pandas as pd
 import os
 from datetime import datetime
 from unidecode import unidecode
+import bcrypt
 import logging
 import time
 import matplotlib.pyplot as plt
@@ -21,46 +22,44 @@ logging.basicConfig(filename='auditoria_glosas.log', level=logging.INFO,
 def registrar(usu, acao, detalhes=""):
     logging.info(f"USUARIO: {usu} - ACAO: {acao} - DETALHES: {detalhes}")
 
-# === SEGURANÇA SIMPLIFICADA ===
+# === SEGURANÇA ===
+def check_password(senha, senha_hash):
+    return bcrypt.checkpw(senha.encode('utf-8'), senha_hash.encode('utf-8'))
 
 usuarios = {
     "thalita.moura": {
-        "senha": "1234",
+        "senha": "$2b$12$Kai0k60BAGxa5Sc00N6wy.2TZNXiguFlIUKAJBoeQG/tdCrP3O4f.",
         "perfil": "supervisor"
     },
     "ana.pereira": {
-        "senha": "1234",
+        "senha": "$2b$12$gN54bhAbu7oNNTGq4OC3a.EQt6W1NZ2XAzSItR6MDxBxy.ySBfjFu",
         "perfil": "analista"
     },
     "ana.santos": {
-        "senha": "1234",
+        "senha": "$2b$12$JHgqmOF6S7wvy.PDmAsYAeMFSLmyKMAWQ8a.yveHPI2Dnn/RARuNe",
         "perfil": "analista"
     },
     "idayane.oliveira": {
-        "senha": "1234",
+        "senha": "$2b$12$o28V.P8XgGMjZI2zPWpEzuuQYUeOAFocNFJBoEn/aEU1GI21tzO7C",
         "perfil": "analista"
     },
     "bruna.silva": {
-        "senha": "1234",
+        "senha": "$2b$12$P6TyKgFI6DE4iMxX1CaiWeVBdwaoBRzCbYb/jmy0IfpV3l07IWBlS",
         "perfil": "analista"
     },
     "mariana.cunha": {
-        "senha": "1234",
+        "senha": "$2b$12$ETPYnBoSBWy5UHr5D8OH3Ocd4tbsg87xVIRngJJPE/1/gdN4B6ceG",
         "perfil": "analista"
     },
     "weslane.martins": {
-        "senha": "1234",
+        "senha": "$2b$12$wM8EFz7MGTEriaQrK/rCielFw3.kh6gbeKc61/Etr5qKYk93tSfSW",
         "perfil": "analista"
     },
     "riquelme": {
-        "senha": "1234",
+        "senha": "$2b$12$evNWwq8om43/m0Bgf3SmMendfvIvTOLo8o3au0DFxD/Xa9iCPLWf.",
         "perfil": "analista"
     },
 }
-
-def check_password(senha_digitada, senha_salva):
-    return senha_digitada == senha_salva
-
 
 if 'auth' not in st.session_state:
     st.session_state.auth = False
@@ -76,8 +75,7 @@ if not st.session_state.auth:
             st.session_state.auth = True
             st.session_state.user = user
             registrar(user, "LOGIN_SUCESSO")
-            st.rerun()
-
+            st.experimental_rerun()
         else:
             st.error("Senha incorreta. Tente novamente.")
             registrar(user, "LOGIN_FALHA")
