@@ -89,6 +89,18 @@ if not st.session_state.auth:
 st.title("🏥 Análise de Glosas - Unimed")
 st.sidebar.success(f"Logado como: {st.session_state.user}")
 
+# === FUNÇÃO tratar_glosas (usa correcao_arquivo.py) ===
+def tratar_glosas(df):
+    df.columns = [unidecode(str(c)).strip().lower() for c in df.columns]
+    df.dropna(how='all', inplace=True)
+    df = df[df['motivo da glosa'].notna()]
+    df['motivo da glosa'] = df['motivo da glosa'].str.strip().str.upper()
+    df = df[~df['motivo da glosa'].isin(['REAPRESENTACAO', 'CODIGO REMOVIDO'])]
+    if 'prestador' in df.columns:
+        df = df[~df['prestador'].str.contains("ISENTO", case=False, na=False)]
+    df = corrigir_caracteres(df)  # Correções do correcao_arquivo.py
+    return df
+
 # === UPLOAD E PROCESSAMENTO ===
 st.header("📤 Envio de Arquivo .xlsx cru")
 file = st.file_uploader("Selecione o arquivo 549.xlsx", type="xlsx")
@@ -122,6 +134,7 @@ if file:
 
     for i, row in resumo.iterrows():
         st.write(f"🔹 {row['Qtd']} glosas encontradas: {row['Motivo']}")
+
 
     # === DOWNLOAD XLS ===
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
