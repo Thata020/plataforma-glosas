@@ -6,7 +6,6 @@ import pandas as pd
 import os
 from datetime import datetime
 from unidecode import unidecode
-import bcrypt
 import logging
 import time
 import matplotlib.pyplot as plt
@@ -22,44 +21,46 @@ logging.basicConfig(filename='auditoria_glosas.log', level=logging.INFO,
 def registrar(usu, acao, detalhes=""):
     logging.info(f"USUARIO: {usu} - ACAO: {acao} - DETALHES: {detalhes}")
 
-# === SEGURANÇA ===
-def check_password(senha, senha_hash):
-    return bcrypt.checkpw(senha.encode('utf-8'), senha_hash.encode('utf-8'))
+# === SEGURANÇA SIMPLIFICADA ===
 
 usuarios = {
     "thalita.moura": {
-        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "senha": "1234",
         "perfil": "supervisor"
     },
     "ana.pereira": {
-        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "senha": "1234",
         "perfil": "analista"
     },
     "ana.santos": {
-        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "senha": "1234",
         "perfil": "analista"
     },
     "idayane.oliveira": {
-        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "senha": "1234",
         "perfil": "analista"
     },
     "bruna.silva": {
-        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "senha": "1234",
         "perfil": "analista"
     },
     "mariana.cunha": {
-        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "senha": "1234",
         "perfil": "analista"
     },
     "weslane.martins": {
-        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "senha": "1234",
         "perfil": "analista"
     },
     "riquelme": {
-        "senha": "$2b$12$ph14fDRT0SbnImGF7hdY9OAs1h1WB/1Bt5CrE/efqxO0AVCHoyy/q",
+        "senha": "1234",
         "perfil": "analista"
-    }
+    },
 }
+
+def check_password(senha_digitada, senha_salva):
+    return senha_digitada == senha_salva
+
 
 if 'auth' not in st.session_state:
     st.session_state.auth = False
