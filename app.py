@@ -75,7 +75,7 @@ if not st.session_state.auth:
             st.session_state.auth = True
             st.session_state.user = user
             registrar(user, "LOGIN_SUCESSO")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Senha incorreta. Tente novamente.")
             registrar(user, "LOGIN_FALHA")
