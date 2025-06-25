@@ -12,6 +12,8 @@ import time
 import matplotlib.pyplot as plt
 import seaborn as sns
 from script_master import processar_glosas
+from correcao_arquivo import corrigir_caracteres
+
 
 
 # === CONFIG INICIAL ===
@@ -94,9 +96,16 @@ def tratar_glosas(df):
     df = df[df['motivo da glosa'].notna()]
     df['motivo da glosa'] = df['motivo da glosa'].str.strip().str.upper()
     df = df[~df['motivo da glosa'].isin(['REAPRESENTACAO', 'CODIGO REMOVIDO'])]
+
     if 'prestador' in df.columns:
         df = df[~df['prestador'].str.contains("ISENTO", case=False, na=False)]
+
+    # Aplica a correção de caracteres em todas as colunas de texto
+    for col in df.select_dtypes(include=["object"]).columns:
+        df[col] = df[col].apply(corrigir_caracteres)
+
     return df
+
 
 # === UPLOAD E PROCESSAMENTO ===
 st.header("📤 Envio de Arquivo .xlsx cru")
