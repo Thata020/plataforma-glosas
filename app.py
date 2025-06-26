@@ -1,5 +1,5 @@
 # === app.py ===
-# Plataforma de Análise de Glosas - Unificada com DeepSeek + correcao.py
+# Plataforma de Análise de Glosas - Unificada com DeepSeek + correcao_arquivo.py
 
 import streamlit as st
 import pandas as pd
@@ -13,8 +13,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from script_master import processar_glosas
 from correcao_arquivo import corrigir_caracteres
-
-
 
 # === CONFIG INICIAL ===
 st.set_page_config(page_title="Glosas Unimed", layout="wide", page_icon="🏥")
@@ -65,6 +63,7 @@ usuarios = {
     },
 }
 
+# === LOGIN ===
 if 'auth' not in st.session_state:
     st.session_state.auth = False
     st.session_state.user = None
@@ -85,43 +84,6 @@ if not st.session_state.auth:
             registrar(user, "LOGIN_FALHA")
     st.stop()
 
-# === INTERFACE PRINCIPAL ===
-st.title("🏥 Análise de Glosas - Unimed")
-st.sidebar.success(f"Logado como: {st.session_state.user}")
-
-# === UPLOAD E PROCESSAMENTO ===
-st.header("📤 Envio de Arquivo .xlsx cru")
-file = st.file_uploader("Selecione o arquivo 549.xlsx", type="xlsx")
-
-if file:
-    registrar(st.session_state.user, "UPLOAD", file.name)
-
-    try:
-        st.info("📂 Carregando o arquivo...")
-        df = pd.read_excel(file)
-
-        st.info("🛠 Fazendo correções no arquivo...")
-        df = tratar_glosas(df)
-
-        st.info("🔍 Verificando se há glosas...")
-        df = processar_glosas(df)
-
-    except Exception as e:
-        st.error("❌ Erro ao processar o arquivo.")
-        registrar(st.session_state.user, "ERRO_PROCESSAMENTO", str(e))
-        st.stop()
-
-    if 'data' in df.columns:
-        df['data'] = pd.to_datetime(df['data'], errors='coerce')
-        df['mes'] = df['data'].dt.strftime('%Y-%m')
-    df['id'] = range(1, len(df) + 1)
-
-    resumo = df['motivo da glosa'].value_counts().reset_index()
-    resumo.columns = ['Motivo', 'Qtd']
-    st.success("✅ Arquivo processado com sucesso!")
-
-    for i, row in resumo.iterrows():
-        st.write(f"🔹 {row['Qtd']} glosas encontradas: {row['Motivo']}")
 # === FUNÇÃO tratar_glosas (usa correcao_arquivo.py) ===
 def tratar_glosas(df):
     df.columns = [unidecode(str(c)).strip().lower() for c in df.columns]
@@ -134,24 +96,65 @@ def tratar_glosas(df):
     df = corrigir_caracteres(df)  # Correções do correcao_arquivo.py
     return df
 
-    # === DOWNLOAD XLS ===
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    nome_saida = f"resultado_glosas_{timestamp}.xlsx"
-    df.to_excel(nome_saida, index=False)
-    with open(nome_saida, "rb") as f:
-        st.download_button("📥 Baixar Arquivo Analisado", f, file_name=nome_saida)
-    os.remove(nome_saida)
+# === INTERFACE PRINCIPAL ===
+st.title("🏥 Análise de Glosas - Unimed")
+st.sidebar.success(f"Logado como: {st.session_state.user}")
 
-    # === DASHBOARD ===
-    st.subheader("📊 Métricas de Análise")
-    col1, col2 = st.columns(2)
-    col1.metric("Total de Glosas", len(df))
-    col2.metric("Valor Total", f"R$ {df['valor glosa'].sum():,.2f}")
+# === UPLOAD E PROCESSAMENTO ===
+st.header("📤 Envio de Arquivo .xlsx cru")
+file = st.file_uploader("Selecione o arquivo 549.xlsx", type="xlsx")
 
-    st.subheader("📉 Evolução Mensal de Glosas")
-    if 'mes' in df.columns:
-        evolucao = df.groupby('mes')['valor glosa'].sum().reset_index()
-        fig, ax = plt.subplots(figsize=(10, 4))
-        sns.lineplot(data=evolucao, x='mes', y='valor glosa', marker='o', ax=ax)
-        ax.set_title("Valor de Glosas por Mês")
-        st.pyplot(fig)
+if file:
+    registrar(st.session_state.user, "UPLOAD", file.name)
+    try:
+        st.info("📂 Carregando o arquivo...")
+        df = pd.read_excel(file)
+
+        st.info("🛠 Fazendo correções no arquivo...")
+        df = tratar_glosas(df)
+
+        st.info("🔍 Verificando se há glosas...")
+        df = processar_glosas(df)
+
+        if 'data' in df.columns:
+            df['data'] = pd.to_datetime(df['data'], errors='coerce')
+            df['mes'] = df['data'].dt.strftime('%Y-%m')
+        df['id'] = range(1, len(df) + 1)
+
+        resumo = df['motivo da glosa'].value_counts().reset_index()
+        resumo.columns = ['Motivo', 'Qtd']
+        st.success("✅ Arquivo processado com sucesso!")
+
+        for i, row in resumo.iterrows():
+            st.write(f"🔹 {row['Qtd']} glosas encontradas: {row['Motivo']}")
+
+        # === DOWNLOAD XLS ===
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nome_saida = f"resultado_glosas_{timestamp}.xlsx"
+        df.to_excel(nome_saida, index=False)
+        with open(nome_saida, "rb") as f:
+            st.download_button("📥 Baixar Arquivo Analisado", f, file_name=nome_saida)
+        os.remove(nome_saida)
+
+        # === DASHBOARD ===
+        st.subheader("📊 Métricas de Análise")
+        col1, col2 = st.columns(2)
+        col1.metric("Total de Glosas", len(df))
+        col2.metric("Valor Total", f"R$ {df['valor glosa'].sum():,.2f}")
+
+        st.subheader("📉 Evolução Mensal de Glosas")
+        if 'mes' in df.columns:
+            evolucao = df.groupby('mes')['valor glosa'].sum().reset_index()
+            fig, ax = plt.subplots(figsize=(10, 4))
+            sns.lineplot(data=evolucao, x='mes', y='valor glosa', marker='o', ax=ax)
+            ax.set_title("Valor de Glosas por Mês")
+            st.pyplot(fig)
+
+    except Exception as e:
+        st.error("❌ Erro ao processar o arquivo.")
+        registrar(st.session_state.user, "ERRO_PROCESSAMENTO", str(e))
+        st.stop()
+
+# === RODAPÉ ===
+st.markdown("---")
+st.caption("Desenvolvido por Contas Médicas - Unimed | Versão 3.0")
