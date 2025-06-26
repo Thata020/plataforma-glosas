@@ -1538,121 +1538,58 @@ def aplicar_regra_r27(df):
 
 
 # ===================================================
-# INICIAR EXECUÇÃO
+# FUNÇÃO FINAL PARA O APP USAR
 # ===================================================
-if __name__ == "__main__":
-    df, df_gpt_tc, df_gpt_rm = carregar_dados()
+def processar_glosas(df):
+    df_gpt_tc, df_gpt_rm = carregar_tabelas_gpt()  # Carrega tabelas auxiliares (Tabelas de base GPT.xlsx)
 
-    # Aplicar todas as regras R01 a R12
-    # Exemplo: qtd_glosas_r01, df_r01 = aplicar_regra_r01(df)
+    # Executar todas as regras
+    regras_aplicadas = []
+    regras_aplicadas.append(aplicar_regra_r01(df))
+    regras_aplicadas.append(aplicar_regra_r02(df))
+    regras_aplicadas.append(aplicar_regra_r03(df))
+    regras_aplicadas.append(aplicar_regra_r04(df))
+    regras_aplicadas.append(aplicar_regra_r05(df))
+    regras_aplicadas.append(aplicar_regra_r06(df))
+    regras_aplicadas.append(aplicar_regra_r07(df, df_gpt_tc, df_gpt_rm))
+    regras_aplicadas.append(aplicar_regra_r08(df))
+    regras_aplicadas.append(aplicar_regra_r09(df))
+    regras_aplicadas.append(aplicar_regra_r10(df))
+    regras_aplicadas.append(aplicar_regra_r11(df))
+    regras_aplicadas.append(aplicar_regra_r12(df))
+    regras_aplicadas.append(aplicar_regra_r13(df))
+    regras_aplicadas.append(aplicar_regra_r14(df))
+    regras_aplicadas.append(aplicar_regra_r15(df))
+    regras_aplicadas.append(aplicar_regra_r16(df))
+    regras_aplicadas.append(aplicar_regra_r17(df))
+    regras_aplicadas.append(aplicar_regra_r18(df))
+    regras_aplicadas.append(aplicar_regra_r19(df))
+    regras_aplicadas.append(aplicar_regra_r20(df))
+    regras_aplicadas.append(aplicar_regra_r21(df))
+    regras_aplicadas.append(aplicar_regra_r22(df))
+    regras_aplicadas.append(aplicar_regra_r23(df))
+    regras_aplicadas.append(aplicar_regra_r24(df))
+    regras_aplicadas.append(aplicar_regra_r25(df))
+    regras_aplicadas.append(aplicar_regra_r26(df))
+    regras_aplicadas.append(aplicar_regra_r27(df))
 
-    qtd_glosas_r01, df_r01 = aplicar_regra_r01(df)
-    qtd_glosas_r02, df_r02 = aplicar_regra_r02(df)
-    qtd_glosas_r03, df_r03 = aplicar_regra_r03(df)
-    qtd_glosas_r04, df_r04 = aplicar_regra_r04(df)
-    qtd_glosas_r05, df_r05 = aplicar_regra_r05(df)
-    qtd_glosas_r06, df_r06 = aplicar_regra_r06(df)
-    qtd_glosas_r07, df_r07 = aplicar_regra_r07(df, df_gpt_tc, df_gpt_rm)
-    qtd_glosas_r08, df_r08 = aplicar_regra_r08(df)
-    qtd_glosas_r09, df_r09 = aplicar_regra_r09(df)
-    qtd_glosas_r10, df_r10 = aplicar_regra_r10(df)
-    qtd_glosas_r11, df_r11 = aplicar_regra_r11(df)
-    qtd_glosas_r12, df_r12 = aplicar_regra_r12(df)
-    qtd_glosas_r13, df_r13 = aplicar_regra_r13(df)
-    qtd_glosas_r14, df_r14 = aplicar_regra_r14(df)
-    qtd_glosas_r15, df_r15 = aplicar_regra_r15(df)
-    qtd_glosas_r16, df_r16 = aplicar_regra_r16(df)
-    qtd_glosas_r17, df_r17 = aplicar_regra_r17(df)
-    qtd_glosas_r18, df_r18 = aplicar_regra_r18(df)
-    qtd_glosas_r19, df_r19 = aplicar_regra_r19(df)
-    qtd_glosas_r20, df_r20 = aplicar_regra_r20(df)
-    qtd_glosas_r21, df_r21 = aplicar_regra_r21(df)
-    qtd_glosas_r22, df_r22 = aplicar_regra_r22(df)
-    qtd_glosas_r23, df_r23 = aplicar_regra_r23(df)
-    qtd_glosas_r24, df_r24 = aplicar_regra_r24(df)
-    qtd_glosas_r25, df_r25 = aplicar_regra_r25(df)
-    qtd_glosas_r26, df_r26 = aplicar_regra_r26(df)
-    qtd_glosas_r27, df_r27 = aplicar_regra_r27(df)
+    # Unir tudo em um único DataFrame
+    df_glosas_final = pd.concat([df for _, df in regras_aplicadas], ignore_index=True)
 
-# ===================================================
-# COMBINAR GLOSAS
-# ===================================================
-# Agora que as glosas de todas as regras foram registradas, podemos combiná-las
-df_glosas_final = pd.concat([df_r01, df_r02, df_r03, df_r04, df_r05, df_r06, df_r07, df_r08, df_r09, df_r10, df_r11,
-                             df_r12, df_r13, df_r14, df_r15, df_r16, df_r17, df_r18, df_r19, df_r20, df_r21, df_r22,
-                             df_r23, df_r24, df_r25, df_r26, df_r27], ignore_index=True)
-# Padronização robusta da Competência para MM/AAAA, extraindo mês e ano da data
-if "Competência" in df_glosas_final.columns:
-    try:
-        df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors="coerce")
-        df_glosas_final["Competência"] = df_glosas_final["Competência"].apply(lambda x: f"{x.month:02}/{x.year}" if pd.notnull(x) else "")
-    except Exception as e:
-        print(f"Erro ao formatar a coluna Competência: {e}")
-#====================================================
-# LIMPEZA FINAL DE COLUNAS TÉCNICAS
-# ===================================================
-colunas_indesejadas = [
-    "Datahora", "DifHoras", "Dias desde ultima consulta",
-    "Diarias", "Duplicado", "Motivo_Detalhado", "Soma Quantidade",
-    "Limite", "Excedeu", "Vl 1", "Vl 2", "Vl 3", "Vl 4", "Motivo", "Excecao"
-]
-df_glosas_final.drop(columns=[col for col in colunas_indesejadas if col in df_glosas_final.columns], inplace=True, errors="ignore")
+    # Corrigir competência
+    if "Competência" in df_glosas_final.columns:
+        try:
+            df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors="coerce")
+            df_glosas_final["Competência"] = df_glosas_final["Competência"].apply(lambda x: f"{x.month:02}/{x.year}" if pd.notnull(x) else "")
+        except Exception as e:
+            print(f"Erro ao formatar Competência: {e}")
 
-# ===================================================
-# GERAR RESUMO (CÓDIGO CORRIGIDO)
-# ===================================================
-resumo = []
+    # Limpar colunas técnicas
+    colunas_indesejadas = [
+        "Datahora", "DifHoras", "Dias desde ultima consulta", "Diarias", "Duplicado",
+        "Motivo_Detalhado", "Soma Quantidade", "Limite", "Excedeu",
+        "Vl 1", "Vl 2", "Vl 3", "Vl 4", "Motivo", "Excecao"
+    ]
+    df_glosas_final.drop(columns=[col for col in colunas_indesejadas if col in df_glosas_final.columns], inplace=True, errors="ignore")
 
-# Primeiro processa as regras que têm glosas
-for regra, grupo in df_glosas_final.groupby("Nº da Regra"):
-    qtd_glosas = len(grupo)
-    resumo.append([regra, grupo["Nome da Regra"].iloc[0], qtd_glosas, "Com Glosas"])
-
-# Depois adiciona as regras que não têm glosas
-regras_com_glosas = set(df_glosas_final["Nº da Regra"].unique())
-for regra, nome_regra in TODAS_AS_REGRAS.items():
-    if regra not in regras_com_glosas:
-        resumo.append([regra, nome_regra, 0, "Sem Glosas"])
-
-# Ordena o resumo pela regra
-resumo.sort(key=lambda x: x[0])
-
-df_resumo = pd.DataFrame(resumo, columns=["Nº da Regra", "Nome da Regra", "Qtde Glosas", "Status"])
-
-# ===================================================
-# GERAR RELATÓRIO EM EXCEL
-# ===================================================
-
-# Padronizar a coluna 'Competência' para MM/AAAA, se existir
-if "Competência" in df_glosas_final.columns:
-    try:
-        df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors="coerce")
-        df_glosas_final["Competência"] = df_glosas_final["Competência"].dt.strftime("%m/%Y")
-        df_glosas_final["Competência"] = df_glosas_final["Competência"].fillna("")
-    except Exception as e:
-        print(f"Erro ao formatar a coluna Competência: {e}")
-
-# Manter TODAS as colunas originais + as 3 novas colunas
-colunas_originais = [
-    "Competência", "Nr Sequencia Conta", "Status Conta", "Carteirinha", "Nome beneficiario",
-    "Dt Procedimento", "Hora Proc", "Cd Procedimento", "Descricao", "Quantidade",
-    "Vl Unitario", "Vl Liberado", "Vl Calculado", "Vl Anestesista", "Vl Medico",
-    "Vl Custo Operacional", "Vl Filme", "Tipo Guia", "Via Acesso", "Taxa Item",
-    "Grau Participantes", "Tipo Receita", "Executante Intercambio"
-]
-
-# Colunas de auditoria a serem adicionadas
-colunas_glosa = ["Nº da Regra", "Nome da Regra", "Motivo da Glosa"]
-
-# Junta todas
-colunas_finais = colunas_originais + colunas_glosa
-
-# Selecionar apenas essas colunas (ignorar se faltar alguma)
-df_glosas_final = df_glosas_final[[col for col in colunas_finais if col in df_glosas_final.columns]]
-
-# Exportar Excel
-with pd.ExcelWriter(OUTPUT_FILE, engine="openpyxl") as writer:
-    df_glosas_final.to_excel(writer, sheet_name="Glosas", index=False)
-    df_resumo.to_excel(writer, sheet_name="Resumo", index=False)
-
-print(f"✅ O arquivo foi salvo em: {OUTPUT_FILE}")
+    return df_glosas_final
