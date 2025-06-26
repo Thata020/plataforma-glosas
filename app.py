@@ -151,7 +151,7 @@ if file:
             st.pyplot(fig)
 
     except Exception as e:
-        st.error("❌ Erro ao processar o arquivo.")
+        st.error(f"❌ Erro ao processar o arquivo: {e}")
         registrar(st.session_state.user, "ERRO_PROCESSAMENTO", str(e))
         st.stop()
 
