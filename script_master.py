@@ -1536,60 +1536,40 @@ def aplicar_regra_r27(df):
         return registrar_glosa(df_glosa, "R27", "Valor elevado - códigos de apartamento", motivo)
     return 0, pd.DataFrame()
 
+    # Combinar todas as glosas de forma segura
+    df_glosas_final = pd.concat(regras_resultados, ignore_index=True)
 
-# ===================================================
-# FUNÇÃO FINAL PARA O APP USAR
-# ===================================================
-def processar_glosas(df):
-    df_gpt_tc, df_gpt_rm = carregar_tabelas_gpt()  # Carrega tabelas auxiliares (Tabelas de base GPT.xlsx)
-
-    # Executar todas as regras
-    regras_aplicadas = []
-    regras_aplicadas.append(aplicar_regra_r01(df))
-    regras_aplicadas.append(aplicar_regra_r02(df))
-    regras_aplicadas.append(aplicar_regra_r03(df))
-    regras_aplicadas.append(aplicar_regra_r04(df))
-    regras_aplicadas.append(aplicar_regra_r05(df))
-    regras_aplicadas.append(aplicar_regra_r06(df))
-    regras_aplicadas.append(aplicar_regra_r07(df, df_gpt_tc, df_gpt_rm))
-    regras_aplicadas.append(aplicar_regra_r08(df))
-    regras_aplicadas.append(aplicar_regra_r09(df))
-    regras_aplicadas.append(aplicar_regra_r10(df))
-    regras_aplicadas.append(aplicar_regra_r11(df))
-    regras_aplicadas.append(aplicar_regra_r12(df))
-    regras_aplicadas.append(aplicar_regra_r13(df))
-    regras_aplicadas.append(aplicar_regra_r14(df))
-    regras_aplicadas.append(aplicar_regra_r15(df))
-    regras_aplicadas.append(aplicar_regra_r16(df))
-    regras_aplicadas.append(aplicar_regra_r17(df))
-    regras_aplicadas.append(aplicar_regra_r18(df))
-    regras_aplicadas.append(aplicar_regra_r19(df))
-    regras_aplicadas.append(aplicar_regra_r20(df))
-    regras_aplicadas.append(aplicar_regra_r21(df))
-    regras_aplicadas.append(aplicar_regra_r22(df))
-    regras_aplicadas.append(aplicar_regra_r23(df))
-    regras_aplicadas.append(aplicar_regra_r24(df))
-    regras_aplicadas.append(aplicar_regra_r25(df))
-    regras_aplicadas.append(aplicar_regra_r26(df))
-    regras_aplicadas.append(aplicar_regra_r27(df))
-
-    # Unir tudo em um único DataFrame
-    df_glosas_final = pd.concat([df for _, df in regras_aplicadas], ignore_index=True)
-
-    # Corrigir competência
+    # Formatando Competência
     if "Competência" in df_glosas_final.columns:
         try:
             df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors="coerce")
-            df_glosas_final["Competência"] = df_glosas_final["Competência"].apply(lambda x: f"{x.month:02}/{x.year}" if pd.notnull(x) else "")
+            df_glosas_final["Competência"] = df_glosas_final["Competência"].apply(
+                lambda x: f"{x.month:02}/{x.year}" if pd.notnull(x) else ""
+            )
         except Exception as e:
-            print(f"Erro ao formatar Competência: {e}")
+            print(f"Erro ao formatar a coluna Competência: {e}")
 
-    # Limpar colunas técnicas
+    # Limpeza final
     colunas_indesejadas = [
-        "Datahora", "DifHoras", "Dias desde ultima consulta", "Diarias", "Duplicado",
-        "Motivo_Detalhado", "Soma Quantidade", "Limite", "Excedeu",
-        "Vl 1", "Vl 2", "Vl 3", "Vl 4", "Motivo", "Excecao"
+        "Datahora", "DifHoras", "Dias desde ultima consulta",
+        "Diarias", "Duplicado", "Motivo_Detalhado", "Soma Quantidade",
+        "Limite", "Excedeu", "Vl 1", "Vl 2", "Vl 3", "Vl 4", "Motivo", "Excecao"
     ]
-    df_glosas_final.drop(columns=[col for col in colunas_indesejadas if col in df_glosas_final.columns], inplace=True, errors="ignore")
+    df_glosas_final.drop(columns=[col for col in colunas_indesejadas if col in df_glosas_final.columns],
+                         inplace=True, errors="ignore")
 
-    return df_glosas_final
+    # Resumo por regra
+    resumo = []
+    regras_com_glosas = set(df_glosas_final["Nº da Regra"].unique())
+    for regra, grupo in df_glosas_final.groupby("Nº da Regra"):
+        resumo.append([regra, grupo["Nome da Regra"].iloc[0], len(grupo), "Com Glosas"])
+    for regra, nome_regra in TODAS_AS_REGRAS.items():
+        if regra not in regras_com_glosas:
+            resumo.append([regra, nome_regra, 0, "Sem Glosas"])
+
+    resumo.sort(key=lambda x: x[0])
+    df_resumo = pd.DataFrame(resumo, columns=["Nº da Regra", "Nome da Regra", "Qtde Glosas", "Status"])
+
+    # Salvar resultados
+    df_glosas_final.to_excel("Relatorio_Final_Unimed_Auditoria.xlsx", index=False)
+    df_resumo.to_excel("Resumo_Regras_Unimed.xlsx", index=False)
