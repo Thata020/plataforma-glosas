@@ -1589,4 +1589,5 @@ df_resumo = pd.DataFrame({
 
 return df_glosas_final, df_resumo
 
+
     
