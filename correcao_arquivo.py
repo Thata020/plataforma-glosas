@@ -301,11 +301,19 @@ def processar_549(arquivo_entrada, arquivo_saida):
         # Remove quantidade inválida
         if "Quantidade" in df.columns:
             df = df[df["Quantidade"] > 0]
+            
+         # Garante que colunas de auditoria existam
+        df["Nº da Regra"] = ""
+        df["Nome da Regra"] = ""
+        df["Motivo da Glosa"] = ""
 
-        # Salva o resultado
-        df.to_excel(arquivo_saida, index=False, engine="openpyxl")
-        print(f"✅ Arquivo corrigido salvo como: {arquivo_saida}")
+        # Ajusta as colunas existentes
+        colunas_existentes = [col for col in colunas_549 if col in df.columns]
+        df = df[colunas_existentes + ["Nº da Regra", "Nome da Regra", "Motivo da Glosa"]]
 
-    except Exception as e:
-        print(f"❌ Erro ao processar o arquivo: {e}")
+        # Salvar resultado
+        df.to_excel(OUTPUT_FILE, index=False)
+        print(f"✅ Arquivo corrigido salvo como '{OUTPUT_FILE}'")
 
+    if __name__ == "__main__":
+        processar_arquivo()
