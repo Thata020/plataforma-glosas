@@ -1536,58 +1536,49 @@ def aplicar_regra_r27(df):
         return registrar_glosa(df_glosa, "R27", "Valor elevado - códigos de apartamento", motivo)
     return 0, pd.DataFrame()
 
+def processar_glosas(df_base):
+    # ============================
+    # APLICAR TODAS AS REGRAS
+    # ============================
 
-# ============================
-# APLICAR TODAS AS REGRAS
-# ============================
+    # R01 a R06
+    qtd_r01, df_r01 = aplicar_regra_r01(df_base.copy())
+    qtd_r02, df_r02 = aplicar_regra_r02(df_base.copy())
+    qtd_r03, df_r03 = aplicar_regra_r03(df_base.copy())
+    qtd_r04, df_r04 = aplicar_regra_r04(df_base.copy())
+    qtd_r05, df_r05 = aplicar_regra_r05(df_base.copy())
+    qtd_r06, df_r06 = aplicar_regra_r06(df_base.copy())
 
-# R01 a R06
-qtd_r01, df_r01 = aplicar_regra_r01(df_base.copy())
-qtd_r02, df_r02 = aplicar_regra_r02(df_base.copy())
-qtd_r03, df_r03 = aplicar_regra_r03(df_base.copy())
-qtd_r04, df_r04 = aplicar_regra_r04(df_base.copy())
-qtd_r05, df_r05 = aplicar_regra_r05(df_base.copy())
-qtd_r06, df_r06 = aplicar_regra_r06(df_base.copy())
+    # R07 – Fracionamento TC/RM
+    df_base_tc = pd.read_excel("base_tc.xlsx")
+    df_base_rm = pd.read_excel("base_rm.xlsx")
+    qtd_r07, df_r07 = aplicar_regra_r07(df_base.copy(), df_base_tc, df_base_rm)
 
-# ============================
-# R07 – Fracionamento TC/RM
-# ============================
-df_base_tc = pd.read_excel("base_tc.xlsx")
-df_base_rm = pd.read_excel("base_rm.xlsx")
-qtd_r07, df_r07 = aplicar_regra_r07(df_base.copy(), df_base_tc, df_base_rm)
+    # Regras posteriores
+    for i in range(8, 28):  # R08 a R27
+        var_qtd = f"qtd_r{i:02}"
+        var_df = f"df_r{i:02}"
+        if var_qtd not in locals():
+            locals()[var_qtd] = 0
+        if var_df not in locals():
+            locals()[var_df] = pd.DataFrame()
 
-# ================
-# Regras posteriores
-# ================
-for i in range(8, 28):  # R08 a R27
-    var_qtd = f"qtd_r{i:02}"
-    var_df = f"df_r{i:02}"
-    if var_qtd not in locals():
-        locals()[var_qtd] = 0
-    if var_df not in locals():
-        locals()[var_df] = pd.DataFrame()
+    # COMBINAR GLOSAS
+    df_glosas_final = pd.concat([
+        df_r01, df_r02, df_r03, df_r04, df_r05, df_r06, df_r07,
+        df_r08, df_r09, df_r10, df_r11, df_r12, df_r13, df_r14,
+        df_r15, df_r16, df_r17, df_r18, df_r19, df_r20, df_r21,
+        df_r22, df_r23, df_r24, df_r25, df_r26, df_r27
+    ], ignore_index=True)
 
-# ===================================================
-# COMBINAR GLOSAS
-# ===================================================
-df_glosas_final = pd.concat([
-    df_r01, df_r02, df_r03, df_r04, df_r05, df_r06, df_r07,
-    df_r08, df_r09, df_r10, df_r11, df_r12, df_r13, df_r14,
-    df_r15, df_r16, df_r17, df_r18, df_r19, df_r20, df_r21,
-    df_r22, df_r23, df_r24, df_r25, df_r26, df_r27
-], ignore_index=True)
+    if "Competência" in df_glosas_final.columns:
+        df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors='coerce')
+        df_glosas_final["Competência"] = df_glosas_final["Competência"].dt.strftime('%m/%Y')
 
-if "Competência" in df_glosas_final.columns:
-    df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors='coerce')
-    df_glosas_final["Competência"] = df_glosas_final["Competência"].dt.strftime('%m/%Y')
+    df_resumo = pd.DataFrame({
+        "Nº da Regra": [f"R{str(i).zfill(2)}" for i in range(1, 28)],
+        "Qtde Glosas": [locals()[f"qtd_r{str(i).zfill(2)}"] for i in range(1, 28)],
+        "Status": ["OK" if locals()[f"qtd_r{str(i).zfill(2)}"] > 0 else "Sem registros" for i in range(1, 28)]
+    })
 
-df_resumo = pd.DataFrame({
-    "Nº da Regra": [f"R{str(i).zfill(2)}" for i in range(1, 28)],
-    "Qtde Glosas": [locals()[f"qtd_r{str(i).zfill(2)}"] for i in range(1, 28)],
-    "Status": ["OK" if locals()[f"qtd_r{str(i).zfill(2)}"] > 0 else "Sem registros" for i in range(1, 28)]
-})
-
-return df_glosas_final, df_resumo
-
-
-    
+    return df_glosas_final, df_resumo
