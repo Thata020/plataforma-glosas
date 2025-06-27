@@ -3,6 +3,10 @@ import os
 from openpyxl import load_workbook
 from unidecode import unidecode
 
+# Caminho de entrada e saída
+INPUT_FILE = "549_geral.xlsx"
+OUTPUT_FILE = "Atendimentos_Intercambio.xlsx"
+
 # Lista de colunas desejadas na 549, excluindo as removidas e adicionando "Executante intercambio"
 colunas_549 = [
     "Competencia apresentacao", "Nr sequencia conta", "Status conta", "Carteirinha", "Nome beneficiario", 
@@ -11,6 +15,53 @@ colunas_549 = [
     "Vl custo operacional", "Vl filme", "Tipo guia", "Via acesso", "Taxa item", 
     "Grau participantes", "Tipo receita", "Executante intercambio"
 ]
+
+# Carrega o arquivo
+df = pd.read_excel(INPUT_FILE)
+
+# Corrige nomes de colunas
+df.columns = [col.strip().lower().replace("  ", " ").replace(" ", "_") for col in df.columns]
+
+# Renomeia para manter padrão
+mapeamento = {
+    "competência_apresentação": "Competencia apresentacao",
+    "nº_sequência_conta": "Nr sequencia conta",
+    "status_conta": "Status conta",
+    "carteirinha": "Carteirinha",
+    "nome_beneficiário": "Nome beneficiario",
+    "dt_procedimento": "Dt procedimento",
+    "hora_proc": "Hora proc",
+    "cd_procedimento": "Cd procedimento",
+    "descrição": "Descricao",
+    "quantidade": "Quantidade",
+    "vl_unitário": "Vl unitario",
+    "vl_liberado": "Vl liberado",
+    "vl_calculado": "Vl calculado",
+    "vl_anestesista": "Vl anestesista",
+    "vl_médico": "Vl medico",
+    "vl_custo_operacional": "Vl custo operacional",
+    "vl_filme": "Vl filme",
+    "tipo_guia": "Tipo guia",
+    "via_acesso": "Via acesso",
+    "taxa_item": "Taxa item",
+    "grau_participantes": "Grau participantes",
+    "tipo_receita": "Tipo receita",
+    "executante_intercâmbio": "Executante intercambio"
+}
+df.rename(columns=mapeamento, inplace=True)
+
+# Padroniza strings
+for col in df.select_dtypes(include="object").columns:
+    df[col] = df[col].astype(str).str.strip().apply(unidecode)
+
+# Adiciona colunas de auditoria vazias
+df["Nº da Regra"] = ""
+df["Nome da Regra"] = ""
+df["Motivo da Glosa"] = ""
+
+# Reorganiza colunas finais
+colunas_finais = colunas_549 + ["Nº da Regra", "Nome da Regra", "Motivo da Glosa"]
+df = df[[col for col in colunas_finais if col in df.columns]]
 
 # Função para corrigir caracteres corrompidos
 def corrigir_caracteres(texto):
