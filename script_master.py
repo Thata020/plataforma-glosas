@@ -1577,97 +1577,15 @@ df_glosas_final = pd.concat([
     df_r22, df_r23, df_r24, df_r25, df_r26, df_r27
 ], ignore_index=True)
 
-# Padronização robusta da Competência para MM/AAAA, extraindo mês e ano da data
 if "Competência" in df_glosas_final.columns:
-    df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors='coerce')
-    df_glosas_final["Competência"] = df_glosas_final["Competência"].dt.strftime('%m/%Y')
+        df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors='coerce')
+        df_glosas_final["Competência"] = df_glosas_final["Competência"].dt.strftime('%m/%Y')
+
+    df_resumo = pd.DataFrame({
+        "Nº da Regra": [f"R{str(i).zfill(2)}" for i in range(1, 28)],
+        "Qtde Glosas": [locals()[f"qtd_r{str(i).zfill(2)}"] for i in range(1, 28)],
+        "Status": ["OK" if locals()[f"qtd_r{str(i).zfill(2)}"] > 0 else "Sem registros" for i in range(1, 28)]
+    })
+
+    return df_glosas_final, df_resumo
     
-========
-# LIMPEZA FINAL DE COLUNAS TÉCNICAS
-# ===================================================
-colunas_indesejadas = [
-    "Datahora", "DifHoras", "Dias desde ultima consulta",
-    "Diarias", "Duplicado", "Motivo_Detalhado", "Soma Quantidade",
-    "Limite", "Excedeu", "Vl 1", "Vl 2", "Vl 3", "Vl 4", "Motivo", "Excecao"
-]
-df_glosas_final.drop(columns=[col for col in colunas_indesejadas if col in df_glosas_final.columns], inplace=True, errors="ignore")
-
-# ===================================================
-# GERAR RESUMO (CÓDIGO CORRIGIDO)
-# ===================================================
-resumo = []
-
-# Primeiro processa as regras que têm glosas
-for regra, grupo in df_glosas_final.groupby("Nº da Regra"):
-    qtd_glosas = len(grupo)
-    resumo.append([regra, grupo["Nome da Regra"].iloc[0], qtd_glosas, "Com Glosas"])
-
-# Depois adiciona as regras que não têm glosas
-regras_com_glosas = set(df_glosas_final["Nº da Regra"].unique())
-for regra, nome_regra in TODAS_AS_REGRAS.items():
-    if regra not in regras_com_glosas:
-        resumo.append([regra, nome_regra, 0, "Sem Glosas"])
-
-# Ordena o resumo pela regra
-resumo.sort(key=lambda x: x[0])
-
-df_resumo = pd.DataFrame(resumo, columns=["Nº da Regra", "Nome da Regra", "Qtde Glosas", "Status"])
-
-# ===================================================
-# GERAR RELATÓRIO EM EXCEL
-# ===================================================
-
-# Padronizar a coluna 'Competência' para MM/AAAA, se existir
-if "Competência" in df_glosas_final.columns:
-    try:
-        df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors="coerce")
-        df_glosas_final["Competência"] = df_glosas_final["Competência"].dt.strftime("%m/%Y")
-        df_glosas_final["Competência"] = df_glosas_final["Competência"].fillna("")
-    except Exception as e:
-        print(f"Erro ao formatar a coluna Competência: {e}")
-
-# Manter TODAS as colunas originais + as 3 novas colunas
-colunas_originais = [
-    "Competência", "Nr Sequencia Conta", "Status Conta", "Carteirinha", "Nome beneficiario",
-    "Dt Procedimento", "Hora Proc", "Cd Procedimento", "Descricao", "Quantidade",
-    "Vl Unitario", "Vl Liberado", "Vl Calculado", "Vl Anestesista", "Vl Medico",
-    "Vl Custo Operacional", "Vl Filme", "Tipo Guia", "Via Acesso", "Taxa Item",
-    "Grau Participantes", "Tipo Receita", "Executante Intercambio"
-]
-
-# Colunas de auditoria a serem adicionadas
-colunas_glosa = ["Nº da Regra", "Nome da Regra", "Motivo da Glosa"]
-
-# Junta todas
-colunas_finais = colunas_originais + colunas_glosa
-
-# Selecionar apenas essas colunas (ignorar se faltar alguma)
-df_glosas_final = df_glosas_final[[col for col in colunas_finais if col in df_glosas_final.columns]]
-
-# Exportar Excel
-with pd.ExcelWriter(OUTPUT_FILE, engine="openpyxl") as writer:
-    df_glosas_final.to_excel(writer, sheet_name="Glosas", index=False)
-    df_resumo.to_excel(writer, sheet_name="Resumo", index=False)
-
-print(f"✅ O arquivo foi salvo em: {OUTPUT_FILE}")
-
-def main():
-    df, df_gpt_tc, df_gpt_rm = carregar_dados()
-    resultados = []
-
-    for cod, nome in TODAS_AS_REGRAS.items():
-        funcao = globals().get(f"aplicar_regra_{cod.lower()}")
-        if funcao:
-            try:
-                if cod == "R07":
-                    qtd, df_glosa = funcao(df, df_gpt_tc, df_gpt_rm)
-                else:
-                    qtd, df_glosa = funcao(df)
-                if not df_glosa.empty:
-                    resultados.append(df_glosa)
-            except Exception as e:
-                print(f"⚠️ Erro na {cod}: {e}")
-    
-    df_final = pd.concat(resultados, ignore_index=True) if resultados else pd.DataFrame()
-    df_final.to_excel("Relatorio_Final_Unimed_Auditoria.xlsx", index=False)
-
