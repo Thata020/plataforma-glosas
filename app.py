@@ -125,6 +125,30 @@ if file:
         st.error(f"❌ Erro ao processar o arquivo: {e}")
         registrar(st.session_state.user, "ERRO_PROCESSAMENTO", str(e))
         st.stop()
+st.header("⚙️ Rodar Análise Completa (Arquivo 549_geral.xlsx)")
+
+if st.button("🚀 Executar Robô de Glosas"):
+    try:
+        from correcao_arquivo import processar_549
+        from script_master import main as rodar_regras
+
+        st.info("⏳ Corrigindo o arquivo inicial (549_geral.xlsx)...")
+        processar_549("549_geral.xlsx", "Atendimentos_Intercambio.xlsx")
+        st.success("✅ Arquivo corrigido com sucesso.")
+
+        st.info("🔍 Aplicando regras de glosas...")
+        rodar_regras()
+        st.success("✅ Regras aplicadas com sucesso.")
+
+        with open("Relatorio_Final_Unimed_Auditoria.xlsx", "rb") as f:
+            st.download_button("📥 Baixar Relatório Final", f, file_name="Relatorio_Final_Unimed_Auditoria.xlsx")
+
+        st.success("🏁 Processo completo finalizado!")
+
+    except Exception as e:
+        st.error(f"❌ Erro durante a execução: {e}")
+        registrar(st.session_state.user, "ERRO_ROBO_COMPLETO", str(e))
+
 
 # === RODAPÉ ===
 st.markdown("---")
