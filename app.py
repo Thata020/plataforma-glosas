@@ -83,8 +83,7 @@ if file:
         st.info("📂 Carregando o arquivo...")
         df = pd.read_excel(file)
 
-        st.info("🛠 Fazendo correções no arquivo...")
-        df = tratar_glosas(df)
+        st.warning("🔄 Etapa de tratamento pulada (arquivo cru identificado).")
 
         st.info("🔍 Verificando se há glosas com regras...")
         df_resultado, df_resumo = processar_glosas(df)
