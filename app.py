@@ -11,7 +11,7 @@ import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
 from script_master import processar_glosas
-from correcao_arquivo import corrigir_caracteres
+from correcao_arquivo import corrigir_caracteres, processar_549
 
 # === CONFIG ===
 st.set_page_config(page_title="Glosas Unimed", layout="wide", page_icon="🏥")
@@ -65,7 +65,6 @@ def tratar_glosas(df):
     df.dropna(how='all', inplace=True)
     df = df[df['motivo da glosa'].notna()]
     df['motivo da glosa'] = df['motivo da glosa'].str.strip().str.upper()
-    df = df[~df['motivo da glosa'].isin(['REAPRESENTACAO', 'CODIGO REMOVIDO'])]
     if 'prestador' in df.columns:
         df = df[~df['prestador'].str.contains("ISENTO", case=False, na=False)]
     df = corrigir_caracteres(df)
@@ -125,18 +124,18 @@ if file:
         st.error(f"❌ Erro ao processar o arquivo: {e}")
         registrar(st.session_state.user, "ERRO_PROCESSAMENTO", str(e))
         st.stop()
+
+# === EXECUÇÃO COMPLETA ===
 st.header("⚙️ Rodar Análise Completa (Arquivo 549_geral.xlsx)")
 
 if st.button("🚀 Executar Robô de Glosas"):
     try:
-        from correcao_arquivo import processar_549
-        from script_master import main as rodar_regras
-
         st.info("⏳ Corrigindo o arquivo inicial (549_geral.xlsx)...")
         processar_549("549_geral.xlsx", "Atendimentos_Intercambio.xlsx")
         st.success("✅ Arquivo corrigido com sucesso.")
 
         st.info("🔍 Aplicando regras de glosas...")
+        from script_master import main as rodar_regras
         rodar_regras()
         st.success("✅ Regras aplicadas com sucesso.")
 
@@ -148,7 +147,6 @@ if st.button("🚀 Executar Robô de Glosas"):
     except Exception as e:
         st.error(f"❌ Erro durante a execução: {e}")
         registrar(st.session_state.user, "ERRO_ROBO_COMPLETO", str(e))
-
 
 # === RODAPÉ ===
 st.markdown("---")
