@@ -1578,14 +1578,15 @@ df_glosas_final = pd.concat([
 ], ignore_index=True)
 
 if "Competência" in df_glosas_final.columns:
-        df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors='coerce')
-        df_glosas_final["Competência"] = df_glosas_final["Competência"].dt.strftime('%m/%Y')
+    df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors='coerce')
+    df_glosas_final["Competência"] = df_glosas_final["Competência"].dt.strftime('%m/%Y')
 
-    df_resumo = pd.DataFrame({
-        "Nº da Regra": [f"R{str(i).zfill(2)}" for i in range(1, 28)],
-        "Qtde Glosas": [locals()[f"qtd_r{str(i).zfill(2)}"] for i in range(1, 28)],
-        "Status": ["OK" if locals()[f"qtd_r{str(i).zfill(2)}"] > 0 else "Sem registros" for i in range(1, 28)]
-    })
+df_resumo = pd.DataFrame({
+    "Nº da Regra": [f"R{str(i).zfill(2)}" for i in range(1, 28)],
+    "Qtde Glosas": [locals()[f"qtd_r{str(i).zfill(2)}"] for i in range(1, 28)],
+    "Status": ["OK" if locals()[f"qtd_r{str(i).zfill(2)}"] > 0 else "Sem registros" for i in range(1, 28)]
+})
 
-    return df_glosas_final, df_resumo
+return df_glosas_final, df_resumo
+
     
