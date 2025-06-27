@@ -7,15 +7,20 @@ from unidecode import unidecode
 INPUT_FILE = "549_geral.xlsx"
 OUTPUT_FILE = "Atendimentos_Intercambio.xlsx"
 
-# Lista de colunas desejadas na 549, excluindo as removidas e adicionando "Executante intercambio"
-colunas_549 = [
-    "Competencia apresentacao", "Nr sequencia conta", "Status conta", "Carteirinha", "Nome beneficiario", 
-    "Dt procedimento", "Hora proc", "Cd procedimento", "Descricao", 
-    "Quantidade", "Vl unitario", "Vl liberado", "Vl calculado", "Vl anestesista", "Vl medico", 
-    "Vl custo operacional", "Vl filme", "Tipo guia", "Via acesso", "Taxa item", 
-    "Grau participantes", "Tipo receita", "Executante intercambio"
-]
+def processar_549(INPUT_FILE, OUTPUT_FILE):
+    df = pd.read_excel(INPUT_FILE)
 
+    # Lista de colunas desejadas na 549
+    colunas_549 = [
+        "Competencia apresentacao", "Nr sequencia conta", "Status conta", "Carteirinha", "Nome beneficiario", 
+        "Dt procedimento", "Hora proc", "Cd procedimento", "Descricao", 
+        "Quantidade", "Vl unitario", "Vl liberado", "Vl calculado", "Vl anestesista", "Vl medico", 
+        "Vl custo operacional", "Vl filme", "Tipo guia", "Via acesso", "Taxa item", 
+        "Grau participantes", "Tipo receita", "Executante intercambio"
+    ]
+
+    df = df[colunas_549]
+    
 # Carrega o arquivo
 df = pd.read_excel(INPUT_FILE)
 
@@ -315,5 +320,6 @@ def processar_549(arquivo_entrada, arquivo_saida):
         df.to_excel(OUTPUT_FILE, index=False)
         print(f"✅ Arquivo corrigido salvo como '{OUTPUT_FILE}'")
 
-    if __name__ == "__main__":
-        processar_arquivo()
+        if __name__ == "__main__":
+            processar_549(INPUT_FILE, OUTPUT_FILE)
+
