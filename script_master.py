@@ -1537,58 +1537,52 @@ def aplicar_regra_r27(df):
     return 0, pd.DataFrame()
 
 
-# ===================================================
-# INICIAR EXECUÇÃO
-# ===================================================
-if __name__ == "__main__":
-    df, df_gpt_tc, df_gpt_rm = carregar_dados()
+# ============================
+# APLICAR TODAS AS REGRAS
+# ============================
 
-    # Aplicar todas as regras R01 a R12
-    # Exemplo: qtd_glosas_r01, df_r01 = aplicar_regra_r01(df)
+# R01 a R06
+qtd_r01, df_r01 = aplicar_regra_r01(df_base.copy())
+qtd_r02, df_r02 = aplicar_regra_r02(df_base.copy())
+qtd_r03, df_r03 = aplicar_regra_r03(df_base.copy())
+qtd_r04, df_r04 = aplicar_regra_r04(df_base.copy())
+qtd_r05, df_r05 = aplicar_regra_r05(df_base.copy())
+qtd_r06, df_r06 = aplicar_regra_r06(df_base.copy())
 
-    qtd_glosas_r01, df_r01 = aplicar_regra_r01(df)
-    qtd_glosas_r02, df_r02 = aplicar_regra_r02(df)
-    qtd_glosas_r03, df_r03 = aplicar_regra_r03(df)
-    qtd_glosas_r04, df_r04 = aplicar_regra_r04(df)
-    qtd_glosas_r05, df_r05 = aplicar_regra_r05(df)
-    qtd_glosas_r06, df_r06 = aplicar_regra_r06(df)
-    qtd_glosas_r07, df_r07 = aplicar_regra_r07(df, df_gpt_tc, df_gpt_rm)
-    qtd_glosas_r08, df_r08 = aplicar_regra_r08(df)
-    qtd_glosas_r09, df_r09 = aplicar_regra_r09(df)
-    qtd_glosas_r10, df_r10 = aplicar_regra_r10(df)
-    qtd_glosas_r11, df_r11 = aplicar_regra_r11(df)
-    qtd_glosas_r12, df_r12 = aplicar_regra_r12(df)
-    qtd_glosas_r13, df_r13 = aplicar_regra_r13(df)
-    qtd_glosas_r14, df_r14 = aplicar_regra_r14(df)
-    qtd_glosas_r15, df_r15 = aplicar_regra_r15(df)
-    qtd_glosas_r16, df_r16 = aplicar_regra_r16(df)
-    qtd_glosas_r17, df_r17 = aplicar_regra_r17(df)
-    qtd_glosas_r18, df_r18 = aplicar_regra_r18(df)
-    qtd_glosas_r19, df_r19 = aplicar_regra_r19(df)
-    qtd_glosas_r20, df_r20 = aplicar_regra_r20(df)
-    qtd_glosas_r21, df_r21 = aplicar_regra_r21(df)
-    qtd_glosas_r22, df_r22 = aplicar_regra_r22(df)
-    qtd_glosas_r23, df_r23 = aplicar_regra_r23(df)
-    qtd_glosas_r24, df_r24 = aplicar_regra_r24(df)
-    qtd_glosas_r25, df_r25 = aplicar_regra_r25(df)
-    qtd_glosas_r26, df_r26 = aplicar_regra_r26(df)
-    qtd_glosas_r27, df_r27 = aplicar_regra_r27(df)
+# ============================
+# R07 – Fracionamento TC/RM
+# ============================
+df_base_tc = pd.read_excel("base_tc.xlsx")
+df_base_rm = pd.read_excel("base_rm.xlsx")
+qtd_r07, df_r07 = aplicar_regra_r07(df_base.copy(), df_base_tc, df_base_rm)
+
+# ================
+# Regras posteriores
+# ================
+for i in range(8, 28):  # R08 a R27
+    var_qtd = f"qtd_r{i:02}"
+    var_df = f"df_r{i:02}"
+    if var_qtd not in locals():
+        locals()[var_qtd] = 0
+    if var_df not in locals():
+        locals()[var_df] = pd.DataFrame()
 
 # ===================================================
 # COMBINAR GLOSAS
 # ===================================================
-# Agora que as glosas de todas as regras foram registradas, podemos combiná-las
-df_glosas_final = pd.concat([df_r01, df_r02, df_r03, df_r04, df_r05, df_r06, df_r07, df_r08, df_r09, df_r10, df_r11,
-                             df_r12, df_r13, df_r14, df_r15, df_r16, df_r17, df_r18, df_r19, df_r20, df_r21, df_r22,
-                             df_r23, df_r24, df_r25, df_r26, df_r27], ignore_index=True)
+df_glosas_final = pd.concat([
+    df_r01, df_r02, df_r03, df_r04, df_r05, df_r06, df_r07,
+    df_r08, df_r09, df_r10, df_r11, df_r12, df_r13, df_r14,
+    df_r15, df_r16, df_r17, df_r18, df_r19, df_r20, df_r21,
+    df_r22, df_r23, df_r24, df_r25, df_r26, df_r27
+], ignore_index=True)
+
 # Padronização robusta da Competência para MM/AAAA, extraindo mês e ano da data
 if "Competência" in df_glosas_final.columns:
-    try:
-        df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors="coerce")
-        df_glosas_final["Competência"] = df_glosas_final["Competência"].apply(lambda x: f"{x.month:02}/{x.year}" if pd.notnull(x) else "")
-    except Exception as e:
-        print(f"Erro ao formatar a coluna Competência: {e}")
-#====================================================
+    df_glosas_final["Competência"] = pd.to_datetime(df_glosas_final["Competência"], errors='coerce')
+    df_glosas_final["Competência"] = df_glosas_final["Competência"].dt.strftime('%m/%Y')
+    
+========
 # LIMPEZA FINAL DE COLUNAS TÉCNICAS
 # ===================================================
 colunas_indesejadas = [
