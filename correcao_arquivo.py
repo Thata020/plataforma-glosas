@@ -217,51 +217,44 @@ def padronizar_nomes_colunas(df):
     df.columns = [unidecode(col) for col in df.columns]  # Remove acentos
     return df
 
-# Função para processar o arquivo Excel
-def processar_549(input_file, output_file):
-    if not os.path.exists(input_file):
-        print(f"🚨 Erro: O arquivo '{input_file}' não foi encontrado.")
-        return
-    
+def processar_549(arquivo_entrada, arquivo_saida):
     try:
-        print(f"📂 Lendo arquivo de entrada: {input_file}...")
-        df = pd.read_excel(input_file, engine="openpyxl")
-        print(f"✅ Arquivo lido! Total de linhas: {len(df)}")
-        
+        df = pd.read_excel(arquivo_entrada)
+
         # Padroniza os nomes das colunas
-        df = padronizar_nomes_colunas(df)
-        print("🔠 Nomes das colunas padronizados (sem acentos).")
-        
-        # Mantém apenas as colunas necessárias, criando as ausentes
+        df.columns = [str(c).strip().upper() for c in df.columns]
+        df.dropna(how="all", inplace=True)
+
+        # Ajuste: garantir que "Dt procedimento" existe antes de filtrar
+        if "DT PROCEDIMENTO" in df.columns:
+            df = df[df["DT PROCEDIMENTO"].notna()]
+
+        # Padroniza nomes das colunas
+        df.columns = df.columns.str.strip().str.lower().str.replace("_", " ").str.capitalize()
+        df.columns = [unidecode(col) for col in df.columns]
+
+        # Garante que todas as colunas necessárias existem
         for col in colunas_549:
             if col not in df.columns:
                 df[col] = None
         df = df[colunas_549]
-        print("🔍 Colunas filtradas e estruturadas.")
-        
-        # Corrige caracteres corrompidos em todas as colunas de texto
+
+        # Corrige caracteres corrompidos
         for col in df.select_dtypes(include=["object"]).columns:
             df[col] = df[col].apply(corrigir_caracteres)
-        print("🔠 Caracteres corrompidos corrigidos.")
-        
-        # Formata a coluna 'Dt procedimento' para dd/mm/aaaa
+
+        # Formata datas
         if "Dt procedimento" in df.columns:
             df["Dt procedimento"] = pd.to_datetime(df["Dt procedimento"], errors="coerce").dt.strftime("%d/%m/%Y")
-            print("📅 Data dos procedimentos formatada.")
-        
-        # Remove linhas com quantidade zero ou negativa
+
+        # Remove quantidade inválida
         if "Quantidade" in df.columns:
             df = df[df["Quantidade"] > 0]
-            print("🗑️ Linhas com quantidade inválida removidas.")
-        
-        # Salva o DataFrame corrigido
-        df.to_excel(output_file, index=False, engine="openpyxl")
-        print(f"💾 Arquivo corrigido salvo como: {output_file}")
-    
-    except Exception as e:
-        print(f"🚨 Erro ao processar o arquivo: {e}")
 
-# Executa o processamento da 549
-input_file = "549_geral.xlsx"
-output_file = "Atendimentos_Intercambio.xlsx"
-processar_549(input_file, output_file)
+        # Salva o resultado
+        df.to_excel(arquivo_saida, index=False, engine="openpyxl")
+        print(f"✅ Arquivo corrigido salvo como: {arquivo_saida}")
+
+    except Exception as e:
+        print(f"❌ Erro ao processar o arquivo: {e}")
+
