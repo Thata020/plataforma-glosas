@@ -307,7 +307,7 @@ def processar_549(arquivo_entrada, arquivo_saida):
         if "Quantidade" in df.columns:
             df = df[df["Quantidade"] > 0]
             
-         # Garante que colunas de auditoria existam
+        # Garante que colunas de auditoria existam
         df["Nº da Regra"] = ""
         df["Nome da Regra"] = ""
         df["Motivo da Glosa"] = ""
@@ -317,9 +317,11 @@ def processar_549(arquivo_entrada, arquivo_saida):
         df = df[colunas_existentes + ["Nº da Regra", "Nome da Regra", "Motivo da Glosa"]]
 
         # Salvar resultado
-        df.to_excel(OUTPUT_FILE, index=False)
-        print(f"✅ Arquivo corrigido salvo como '{OUTPUT_FILE}'")
+        df.to_excel(arquivo_saida, index=False)
+        print(f"✅ Arquivo corrigido salvo como '{arquivo_saida}'")
+    except Exception as e:
+        print(f"❌ Erro ao processar o arquivo: {e}")
 
-        if __name__ == "__main__":
-            processar_549(INPUT_FILE, OUTPUT_FILE)
-
+# Executa somente se rodar como script principal
+if __name__ == "__main__":
+    processar_549(INPUT_FILE, OUTPUT_FILE)
